@@ -1,0 +1,151 @@
+
+# ==========================================
+# ENVIRONMENT VARIABLES & SECRETS
+# ==========================================
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+secrets/
+credentials/
+
+# ==========================================
+# MACHINE LEARNING MODEL FILES
+# ==========================================
+*.pkl
+*.pickle
+*.joblib
+*.pt
+*.pth
+*.h5
+*.hdf5
+*.keras
+*.onnx
+*.pb
+*.tflite
+*.safetensors
+*.ckpt
+*.model
+*.weights
+*.bin
+
+# Model directories
+models/
+model/
+checkpoints/
+weights/
+pretrained/
+saved_models/
+
+# ==========================================
+# DATASETS & GENERATED DATA
+# ==========================================
+datasets/
+dataset/
+data/raw/
+data/processed/
+data/interim/
+*.csv
+*.parquet
+*.feather
+*.npy
+*.npz
+*.hdf5
+*.tfrecord
+*.zip
+
+# Keep small dataset documentation if required
+!data/README.md
+
+# ==========================================
+# PYTHON
+# ==========================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+ENV/
+.ipynb_checkpoints/
+
+# ==========================================
+# JAVA / MAVEN / SPRING BOOT
+# ==========================================
+target/
+build/
+.gradle/
+.mvn-cache/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# ==========================================
+# NODE / REACT / FRONTEND
+# ==========================================
+node_modules/
+dist/
+.next/
+.nuxt/
+coverage/
+.parcel-cache/
+.vite/
+
+# ==========================================
+# IDE & EDITOR
+# ==========================================
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# ==========================================
+# OS GENERATED FILES
+# ==========================================
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# LOGS & TEMPORARY FILES
+# ==========================================
+*.log
+logs/
+tmp/
+temp/
+.cache/
+
+# ==========================================
+# DOCKER
+# ==========================================
+*.tar
+docker-data/
+
+# ==========================================
+# EXPERIMENTS & TRAINING OUTPUTS
+# ==========================================
+runs/
+wandb/
+mlruns/
+lightning_logs/
+tensorboard/
+outputs/
+experiments/
+
+# ==========================================
+# DATABASE FILES
+# ==========================================
+*.sqlite
+*.sqlite3
+*.db
