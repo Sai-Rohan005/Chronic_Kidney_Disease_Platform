@@ -90,7 +90,7 @@ flowchart LR
     Prediction --> ML
     ML --> Redis
     ML -->|"HTTPS image download"| Images["Allow-listed image host"]
-
+```
 
 ## Prediction Flow
 
@@ -171,6 +171,7 @@ sequenceDiagram
 
     Web-->>Doctor: Display response
     Note over A,ML: Each service independently validates forwarded JWT against Redis
+```
 
 API referenceBearer = Authorization: Bearer <token>. Supported roles: Patient and Doctor.
 Auth — port 8081
