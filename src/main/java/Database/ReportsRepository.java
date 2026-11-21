@@ -18,9 +18,15 @@ import java.util.Map;
 public class ReportsRepository {
 
     private final MongoCollection<Document> reports;
+    private final MongoCollection<Document> appointments;
 
     public ReportsRepository(DB db) {
         this.reports = db.getDatabase().getCollection("reports");
+        this.appointments = db.getDatabase().getCollection("appointments");
+    }
+
+    public Document getAppointment(String id) {
+        return appointments.find(Filters.eq("_id", new org.bson.types.ObjectId(id))).first();
     }
 
     public Document getReport(String appointmentId) {

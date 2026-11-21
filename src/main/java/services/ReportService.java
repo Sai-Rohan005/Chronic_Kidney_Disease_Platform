@@ -1,6 +1,7 @@
 package services;
 
 import Database.ReportsRepository;
+import com.ckd.auth.CurrentCaller;
 import org.bson.Document;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class ReportService {
             return failure(400, "A valid appointment_id is required");
         }
 
+        requireAppointment(appointmentId);
         Document report = reportsRepository.getReport(appointmentId);
         if (report == null) {
             return failure(404, "Report not found");
@@ -36,11 +38,13 @@ public class ReportService {
     }
 
     public ReportResult createReport(Map<String, Object> body) {
+        CurrentCaller.requireRole("Doctor");
         String appointmentId = stringValue(body.get("appointment_id"));
         if (!validAppointmentId(appointmentId)) {
             return failure(400, "A valid appointment_id is required");
         }
 
+        requireAppointment(appointmentId);
         Map<String, Object> reportData = extractReportFields(body);
         if (reportData.isEmpty()) {
             return failure(400, "At least one report field is required");
@@ -60,9 +64,11 @@ public class ReportService {
             String appointmentId,
             Map<String, Object> requestedUpdates
     ) {
+        CurrentCaller.requireRole("Doctor");
         if (!validAppointmentId(appointmentId)) {
             return failure(400, "A valid appointment_id is required");
         }
+        requireAppointment(appointmentId);
         if (requestedUpdates == null || requestedUpdates.isEmpty()) {
             return failure(400, "At least one report field is required");
         }
@@ -96,7 +102,14 @@ public class ReportService {
     }
 
     private static boolean validAppointmentId(String appointmentId) {
-        return appointmentId != null && !appointmentId.isBlank();
+        return org.bson.types.ObjectId.isValid(appointmentId);
+    }
+
+    private void requireAppointment(String id) {
+        Document appointment = reportsRepository.getAppointment(id);
+        if (appointment == null) throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.NOT_FOUND, "Appointment not found");
+        CurrentCaller.requireAppointment(appointment);
     }
 
     private static String stringValue(Object value) {
