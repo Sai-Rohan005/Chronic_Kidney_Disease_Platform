@@ -1,6 +1,7 @@
 package services;
 
 import org.bson.types.ObjectId;
+import com.ckd.auth.CurrentCaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class CkdPredictionService {
     }
 
     public PredictionResult predict(Map<String, Object> body) {
+        CurrentCaller.requireRole("Doctor");
         String appointmentId = body == null
                 ? null : stringValue(body.get("appointment_id"));
         if (!ObjectId.isValid(appointmentId)) {
@@ -43,6 +45,11 @@ public class CkdPredictionService {
         Map<String, Object> appointment;
         try {
             appointment = appointmentClient.getAppointment(appointmentId);
+        } catch (org.springframework.web.client.RestClientResponseException exception) {
+            if (exception.getStatusCode().value() == 401 || exception.getStatusCode().value() == 403) {
+                return failure(exception.getStatusCode().value(), "Appointment access denied");
+            }
+            return failure(502, "Appointment service is unavailable or returned an invalid response");
         } catch (RestClientException exception) {
             logger.error("Could not retrieve appointment {}", appointmentId, exception);
             return failure(502, "Appointment service is unavailable or returned an invalid response");
@@ -51,6 +58,7 @@ public class CkdPredictionService {
             return failure(404, "Appointment not found");
         }
 
+        CurrentCaller.requireAppointment(appointment);
         Object clinicalValue = appointment.get("clinical_data");
         if (!(clinicalValue instanceof Map<?, ?> clinicalData)) {
             return failure(400, "Appointment has no valid clinical_data");
@@ -104,6 +112,11 @@ public class CkdPredictionService {
             Map<String, Object> report;
             try {
                 report = reportClient.storeReport(reportData);
+            } catch (org.springframework.web.client.RestClientResponseException exception) {
+                if (exception.getStatusCode().value() == 401 || exception.getStatusCode().value() == 403) {
+                    return failure(exception.getStatusCode().value(), "Report access denied");
+                }
+                return failure(502, "Report service is unavailable or returned an invalid response");
             } catch (RestClientException exception) {
                 logger.error("Could not store prediction report for appointment {}", appointmentId, exception);
                 return failure(502, "Report service is unavailable or returned an invalid response");

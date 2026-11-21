@@ -24,6 +24,13 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 class ServiceClientsTest {
+    @org.junit.jupiter.api.BeforeEach void caller() {
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("doctor@example.invalid", "caller-token",
+                        java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_Doctor"))));
+    }
+    @org.junit.jupiter.api.AfterEach void clearCaller() { org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
+
 
     @Test
     void appointmentClientFetchesAppointmentById() {
@@ -36,6 +43,7 @@ class ServiceClientsTest {
         server.expect(requestTo(
                         "http://localhost:8082/appointments/507f1f77bcf86cd799439011"
                 ))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.header("Authorization", "Bearer caller-token"))
                 .andExpect(method(GET))
                 .andExpect(content().string(""))
                 .andRespond(withSuccess(
@@ -58,18 +66,19 @@ class ServiceClientsTest {
                 builder, defaultEndpoint("report.report-url")
         );
         Map<String, Object> report = Map.of(
-                "appointment_id", "abc123",
+                "appointment_id", "507f1f77bcf86cd799439011",
                 "results", Map.of("final_diagnosis", "No CKD")
         );
 
         server.expect(requestTo("http://localhost:8083/reports"))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.header("Authorization", "Bearer caller-token"))
                 .andExpect(method(POST))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(content().json(
-                        "{\"appointment_id\":\"abc123\",\"results\":{\"final_diagnosis\":\"No CKD\"}}"
+                        "{\"appointment_id\":\"507f1f77bcf86cd799439011\",\"results\":{\"final_diagnosis\":\"No CKD\"}}"
                 ))
                 .andRespond(withStatus(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(
-                        "{\"message\":\"Report created successfully\",\"report\":{\"appointment_id\":\"abc123\",\"results\":{\"final_diagnosis\":\"No CKD\"}}}"
+                        "{\"message\":\"Report created successfully\",\"report\":{\"appointment_id\":\"507f1f77bcf86cd799439011\",\"results\":{\"final_diagnosis\":\"No CKD\"}}}"
                 ));
 
         Map<String, Object> storedReport = client.storeReport(report);

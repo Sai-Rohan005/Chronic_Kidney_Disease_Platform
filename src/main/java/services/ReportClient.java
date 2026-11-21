@@ -1,5 +1,8 @@
 package services;
 
+import com.ckd.auth.CurrentCaller;
+import org.springframework.http.HttpHeaders;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -28,6 +31,7 @@ public class ReportClient {
     public Map<String, Object> storeReport(Map<String, Object> report) {
         return restClient.post()
                 .uri(endpoint)
+                .header(HttpHeaders.AUTHORIZATION, CurrentCaller.authorizationHeader())
                 .body(report)
                 .retrieve()
                 .body(RESPONSE_TYPE);

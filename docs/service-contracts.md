@@ -1,8 +1,12 @@
 # Service HTTP contracts
 
 These are the canonical contracts used by Prediction and the Appointment and
-Report controllers. Configure service hosts through environment variables; do
-not add endpoint suffixes to the collection URLs below.
+Report controllers. All listed routes require the caller's Bearer token;
+only Auth's login and registration POSTs are public. The shared auth module
+checks JWT signatures and Redis revocation, and service methods enforce ownership.
+See `../../docs/adr/001-token-validation.md` for the security policy and build requirements.
+Configure service hosts through environment variables; do not add endpoint suffixes
+to the collection URLs below.
 
 | Operation | Method and route | Request | Success response |
 | --- | --- | --- | --- |
@@ -99,12 +103,11 @@ and unchanged successes. Auth additionally tests interceptor rejection.
 From the workspace root:
 
 ```bash
-for repo in CKD_AUTHSERVICE CKD_APPOINTMENT_SERVICE CKD_PREDICTION CKD_REPORT_SERVICE; do
-  (cd "$repo" && mvn '-Dtest=*ContractTest,ServiceClientsTest' test) || exit 1
-done
+mvn '-Dtest=*ContractTest,ServiceClientsTest' -Dsurefire.failIfNoSpecifiedTests=false test
 ```
 
-Full suites use `mvn test` in each repo; Auth's application-context test requires
-a valid base64 `JWT_SECRET` from the environment. The focused tests need no
+Full suites use `mvn test` from the workspace root. All application-context smoke
+tests now require a valid base64 `JWT_SECRET` from the environment. Independent
+repository builds must install or publish `shared-auth` first. The focused tests need no
 secrets or running MongoDB, Redis, or ML server. Mockito uses its subclass mock
 maker in provider tests so they do not need JVM agent attachment.

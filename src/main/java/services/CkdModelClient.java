@@ -1,5 +1,7 @@
 package services;
 
+import com.ckd.auth.CurrentCaller;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -27,15 +29,18 @@ public class CkdModelClient {
     private final URI tabularEndpoint;
     private final URI imageEndpoint;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public CkdModelClient(
             @Value("${ckd-prediction.tabular-url:http://localhost:8001/routes/tab_predict}")
             String tabularUrl,
             @Value("${ckd-prediction.image-url:http://localhost:8001/routes/unet_predict}")
             String imageUrl
     ) {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(REQUEST_TIMEOUT)
-                .build();
+        this(HttpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT).build(), tabularUrl, imageUrl);
+    }
+
+    CkdModelClient(HttpClient httpClient, String tabularUrl, String imageUrl) {
+        this.httpClient = httpClient;
         this.gson = new Gson();
         this.tabularEndpoint = URI.create(tabularUrl);
         this.imageEndpoint = URI.create(imageUrl);
@@ -53,6 +58,7 @@ public class CkdModelClient {
         HttpRequest request = HttpRequest.newBuilder(endpoint)
                 .timeout(REQUEST_TIMEOUT)
                 .header("Content-Type", "application/json")
+                .header("Authorization", CurrentCaller.authorizationHeader())
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestBody)))
                 .build();
 
@@ -66,6 +72,10 @@ public class CkdModelClient {
             throw new PredictionException("Prediction service could not be reached", exception);
         }
 
+        if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatusCode.valueOf(response.statusCode()), "Model access denied");
+        }
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new PredictionException(
                     "Prediction service returned HTTP " + response.statusCode()

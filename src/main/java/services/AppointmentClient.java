@@ -1,5 +1,8 @@
 package services;
 
+import com.ckd.auth.CurrentCaller;
+import org.springframework.http.HttpHeaders;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -36,6 +39,7 @@ public class AppointmentClient {
                 .toUri();
         Map<String, Object> response = restClient.get()
                 .uri(requestUri)
+                .header(HttpHeaders.AUTHORIZATION, CurrentCaller.authorizationHeader())
                 .retrieve()
                 .body(RESPONSE_TYPE);
         if (response == null || !(response.get("data") instanceof Map<?, ?>)) {
