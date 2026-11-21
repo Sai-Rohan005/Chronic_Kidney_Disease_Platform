@@ -1,0 +1,466 @@
+{
+  "blockers": [
+    "No verified labeled held-out cohort, split manifest, training provenance, or binary label mapping is supplied.",
+    "No matched tabular/image test cohort with shared patient/case identifiers is supplied.",
+    "Patient disjointness, duplicates, augmentation leakage, and preprocessor fit boundaries cannot be checked.",
+    "No validation cohort or validated learned-fusion weights are supplied; fitting on test cases is forbidden.",
+    "At least one runtime model/preprocessing artifact is missing, empty, or only an LFS pointer."
+  ],
+  "datasets": {
+    "paired_multimodal": {
+      "class_balance": null,
+      "patient_count": null,
+      "sample_count": null,
+      "source": null,
+      "split": null
+    },
+    "tabular": {
+      "class_balance": null,
+      "patient_count": null,
+      "sample_count": null,
+      "source": null,
+      "split": null
+    },
+    "ultrasound": {
+      "class_balance": null,
+      "patient_count": null,
+      "sample_count": null,
+      "source": null,
+      "split": null
+    }
+  },
+  "fusion": {
+    "learned_weights": null,
+    "source_defaults": {
+      "imageWeight": 0.5,
+      "tabularWeight": 0.5,
+      "threshold": 0.5
+    }
+  },
+  "inventory": {
+    "archives": [],
+    "artifacts": [
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/ckd_tabtransformer_artifacts_9/label_encoder.pkl",
+        "sha256": "1a094ec8c9430c5eb87ced380a888739c9d67dfe50defde3cbed450dad5ce476",
+        "size_bytes": 296,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/ckd_tabtransformer_artifacts_9/ordinal_encoder.pkl",
+        "sha256": "f995fa142b1e32d6a279d6ed45fdefd5c2a75329bf47bb0c464674eb20f92daf",
+        "size_bytes": 1218,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/ckd_tabtransformer_artifacts_9/scaler.pkl",
+        "sha256": "58b9768195a5a5cf60774e4422bc92086c29b8080461f71058ae800159d20cd9",
+        "size_bytes": 1244,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/ckd_tabtransformer_artifacts_9/tabtransformer.pt",
+        "sha256": "5bf6af4db8c7b18afa8303489fb160dc9d4c2f9fd74731c361d85cd88ebd1085",
+        "size_bytes": 915497,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/label_encoder.pkl",
+        "sha256": "885ce23957c6e1653583bc0959129d31aa0dbb53ea85c6e74df8db0d2e19e854",
+        "size_bytes": 306,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/ordinal_encoder.pkl",
+        "sha256": "f995fa142b1e32d6a279d6ed45fdefd5c2a75329bf47bb0c464674eb20f92daf",
+        "size_bytes": 1218,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/scaler.pkl",
+        "sha256": "fface3f7e755bc159effe4b66a8863c5d3315ea9dac5f48ec3c2180436824584",
+        "size_bytes": 1244,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/tabtransformer.pt",
+        "sha256": "8b58f81277708af27b7b8e3fa501c7523f4e78038cdabb7f1b7e4648e92cbffe",
+        "size_bytes": 916521,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/mdls/tab_binary_8/tabtransformer_ckd.pt",
+        "sha256": "6f3a8b880a00587353eb87e87dd913aabd1bfc954b2057973107428c4ed74296",
+        "size_bytes": 913949,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/mdls/tab_binary_8/tabtransformer_encoders.pkl",
+        "sha256": "6dfde2a671bf927dddea54870b9c4d9b5ce5d705d2fa867732154454ef513152",
+        "size_bytes": 2116,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tab_binary_8/ordinal_encoder_fold1_5.pkl",
+        "sha256": "1d47bbea8edbd9b10b2f2dc6d30a5f313e85d44ea349d839fd4a6f817f3ff6a2",
+        "size_bytes": 2871,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tab_binary_8/scaler_fold1_5.pkl",
+        "sha256": "225aea4da89ec37cb7201c6bbd33186f0f53dd6ed3c29f30e8004569d80e0955",
+        "size_bytes": 1271,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tab_binary_8/tabtransformer_ckd.pt",
+        "sha256": "6f3a8b880a00587353eb87e87dd913aabd1bfc954b2057973107428c4ed74296",
+        "size_bytes": 913949,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tab_binary_8/tabtransformer_encoders.pkl",
+        "sha256": "6dfde2a671bf927dddea54870b9c4d9b5ce5d705d2fa867732154454ef513152",
+        "size_bytes": 2116,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tab_binary_8/tabtransformer_fold1_5_best.pth",
+        "sha256": "29e30e832b22dcd3e6bd584b01f9e2e62a6d9601e2fba8dff3f2e562db9afd9e",
+        "size_bytes": 913490,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tabtransformernewmodel/ordinal_encoder_fold1_5.pkl",
+        "sha256": "1d47bbea8edbd9b10b2f2dc6d30a5f313e85d44ea349d839fd4a6f817f3ff6a2",
+        "size_bytes": 2871,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tabtransformernewmodel/ordinal_encoder_fold_5.pkl",
+        "sha256": "1d47bbea8edbd9b10b2f2dc6d30a5f313e85d44ea349d839fd4a6f817f3ff6a2",
+        "size_bytes": 2871,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tabtransformernewmodel/scaler_fold1_5.pkl",
+        "sha256": "225aea4da89ec37cb7201c6bbd33186f0f53dd6ed3c29f30e8004569d80e0955",
+        "size_bytes": 1271,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tabtransformernewmodel/scaler_fold_5.pkl",
+        "sha256": "225aea4da89ec37cb7201c6bbd33186f0f53dd6ed3c29f30e8004569d80e0955",
+        "size_bytes": 1271,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tabtransformernewmodel/tabtransformer_fold1_5_best.pth",
+        "sha256": "29e30e832b22dcd3e6bd584b01f9e2e62a6d9601e2fba8dff3f2e562db9afd9e",
+        "size_bytes": 913490,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "services/ml-service/routes/tabtransformernewmodel/tabtransformer_fold_5_best.pth",
+        "sha256": "a550c834abb36f8eaa1e41415b4391fd6e361c96897b3966cb6a9d6ee23e45ee",
+        "size_bytes": 913413,
+        "tracked": true
+      }
+    ],
+    "data_candidates": [],
+    "metadata": [
+      {
+        "categorical_features": [
+          "Red blood cells in urine",
+          "Pus cells in urine",
+          "Pus cell clumps in urine",
+          "Bacteria in urine",
+          "Hypertension (yes/no)",
+          "Diabetes mellitus (yes/no)",
+          "Coronary artery disease (yes/no)",
+          "Appetite (good/poor)",
+          "Pedal edema (yes/no)",
+          "Anemia (yes/no)"
+        ],
+        "declared_classes": [
+          "No_Disease",
+          "Stage_1",
+          "Stage_2",
+          "Stage_3",
+          "Stage_4"
+        ],
+        "lfs_pointer": false,
+        "numerical_features": [
+          "Age of the patient",
+          "Blood pressure (mm/Hg)",
+          "Specific gravity of urine",
+          "Albumin in urine",
+          "Sugar in urine",
+          "Random blood glucose level (mg/dl)",
+          "Blood urea (mg/dl)",
+          "Serum creatinine (mg/dl)",
+          "Sodium level (mEq/L)",
+          "Potassium level (mEq/L)",
+          "Hemoglobin level (gms)",
+          "Packed cell volume (%)",
+          "White blood cell count (cells/cumm)",
+          "Red blood cell count (millions/cumm)"
+        ],
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/ckd_tabtransformer_artifacts_9/meta.json",
+        "sha256": "7eb0d197c7ee31a6a1e341f4324a00cf3d9b1717d6ec0d2626b698f6c11151da",
+        "size_bytes": 1075,
+        "tracked": true
+      },
+      {
+        "categorical_features": [
+          "Red blood cells in urine",
+          "Pus cells in urine",
+          "Pus cell clumps in urine",
+          "Bacteria in urine",
+          "Hypertension (yes/no)",
+          "Diabetes mellitus (yes/no)",
+          "Coronary artery disease (yes/no)",
+          "Appetite (good/poor)",
+          "Pedal edema (yes/no)",
+          "Anemia (yes/no)"
+        ],
+        "declared_classes": [
+          "No_Disease",
+          "Stage_1",
+          "Stage_2",
+          "Stage_3",
+          "Stage_4",
+          "Stage_5"
+        ],
+        "lfs_pointer": false,
+        "numerical_features": [
+          "Age of the patient",
+          "Blood pressure (mm/Hg)",
+          "Specific gravity of urine",
+          "Albumin in urine",
+          "Sugar in urine",
+          "Random blood glucose level (mg/dl)",
+          "Blood urea (mg/dl)",
+          "Serum creatinine (mg/dl)",
+          "Sodium level (mEq/L)",
+          "Potassium level (mEq/L)",
+          "Hemoglobin level (gms)",
+          "Packed cell volume (%)",
+          "White blood cell count (cells/cumm)",
+          "Red blood cell count (millions/cumm)"
+        ],
+        "path": "services/ml-service/routes/ckd_tabtransformer_artifacts_7/meta.json",
+        "sha256": "a05b7e3c475d1b5920bbf3b5ad22fe2de3680125d438932c53d754b91b302e1b",
+        "size_bytes": 1090,
+        "tracked": true
+      }
+    ],
+    "nonstudy_images": [
+      {
+        "lfs_pointer": false,
+        "path": "frontend/public/logo.png",
+        "sha256": "87ad551c29cfee941e100fbb2886c860420af30c925b4f2a8026e6f4d20346b5",
+        "size_bytes": 259172,
+        "tracked": true
+      },
+      {
+        "lfs_pointer": false,
+        "path": "frontend/src/assets/logo.png",
+        "sha256": "87ad551c29cfee941e100fbb2886c860420af30c925b4f2a8026e6f4d20346b5",
+        "size_bytes": 259172,
+        "tracked": true
+      }
+    ],
+    "notebooks": [],
+    "study_image_candidates": []
+  },
+  "metrics_computed": false,
+  "results": {
+    "image_only": {
+      "accuracy": null,
+      "brier_score": null,
+      "confusion_matrix": null,
+      "f1": null,
+      "pr_auc": null,
+      "precision": null,
+      "recall": null,
+      "roc_auc": null
+    },
+    "learned_or_weighted_fusion": {
+      "accuracy": null,
+      "brier_score": null,
+      "confusion_matrix": null,
+      "f1": null,
+      "pr_auc": null,
+      "precision": null,
+      "recall": null,
+      "roc_auc": null
+    },
+    "mean_fusion": {
+      "accuracy": null,
+      "brier_score": null,
+      "confusion_matrix": null,
+      "f1": null,
+      "pr_auc": null,
+      "precision": null,
+      "recall": null,
+      "roc_auc": null
+    },
+    "tabular_only": {
+      "accuracy": null,
+      "brier_score": null,
+      "confusion_matrix": null,
+      "f1": null,
+      "pr_auc": null,
+      "precision": null,
+      "recall": null,
+      "roc_auc": null
+    }
+  },
+  "runtime_assets": [
+    {
+      "available": true,
+      "lfs_pointer": false,
+      "path": "services/ml-service/routes/tab_binary_8/tabtransformer_fold1_5_best.pth",
+      "role": "Tabular classifier",
+      "sha256": "29e30e832b22dcd3e6bd584b01f9e2e62a6d9601e2fba8dff3f2e562db9afd9e",
+      "size_bytes": 913490,
+      "tracked": true
+    },
+    {
+      "available": true,
+      "lfs_pointer": false,
+      "path": "services/ml-service/routes/tab_binary_8/ordinal_encoder_fold1_5.pkl",
+      "role": "Tabular categorical encoder",
+      "sha256": "1d47bbea8edbd9b10b2f2dc6d30a5f313e85d44ea349d839fd4a6f817f3ff6a2",
+      "size_bytes": 2871,
+      "tracked": true
+    },
+    {
+      "available": true,
+      "lfs_pointer": false,
+      "path": "services/ml-service/routes/tab_binary_8/scaler_fold1_5.pkl",
+      "role": "Tabular numeric scaler",
+      "sha256": "225aea4da89ec37cb7201c6bbd33186f0f53dd6ed3c29f30e8004569d80e0955",
+      "size_bytes": 1271,
+      "tracked": true
+    },
+    {
+      "available": false,
+      "lfs_pointer": false,
+      "path": "services/ml-service/routes/transunet_kidney.pth",
+      "role": "Image ROI / TransUNet",
+      "sha256": null,
+      "size_bytes": null,
+      "tracked": false
+    },
+    {
+      "available": false,
+      "lfs_pointer": false,
+      "path": "services/ml-service/routes/ckd_classifier_resnet50_2_2.pth",
+      "role": "Image classifier / ResNet",
+      "sha256": null,
+      "size_bytes": null,
+      "tracked": false
+    }
+  ],
+  "schema_version": 1,
+  "scope": "Current repository filesystem, including Git-ignored artifacts; no external data, runtime databases, or mounted model directories.",
+  "source_facts": {
+    "image": {
+      "CLASS_IDX_TO_NAME": {
+        "0": "notckd",
+        "1": "ckd"
+      }
+    },
+    "tabular": {
+      "categorical_cols": [
+        "rbc",
+        "pc",
+        "pcc",
+        "ba",
+        "htn",
+        "dm",
+        "cad",
+        "appet",
+        "pe",
+        "ane"
+      ],
+      "numerical_cols": [
+        "age",
+        "bp",
+        "sg",
+        "al",
+        "su",
+        "bgr",
+        "bu",
+        "sc",
+        "sod",
+        "pot",
+        "hemo",
+        "pcv",
+        "wc",
+        "rc"
+      ]
+    }
+  },
+  "sources": [
+    {
+      "lfs_pointer": false,
+      "path": "services/ml-service/routes/tab_trans.py",
+      "sha256": "1396f52331cd58fa6eed8a8138640e379a2556631686b17742b2ebb4338dc810",
+      "size_bytes": 11312,
+      "tracked": true
+    },
+    {
+      "lfs_pointer": false,
+      "path": "services/ml-service/routes/image_classification.py",
+      "sha256": "6c7ea61e0f7ecfd1327ba90544413a11cdb3c9b78402bbbc4485ba250df8f3bb",
+      "size_bytes": 11352,
+      "tracked": true
+    },
+    {
+      "lfs_pointer": false,
+      "path": "services/ml-service/model_assets.py",
+      "sha256": "8bb71e8d16bcdd2e55f1ced980ccabba801c1f213dafef3ccbd4c8b663077cc7",
+      "size_bytes": 734,
+      "tracked": true
+    },
+    {
+      "lfs_pointer": false,
+      "path": "services/prediction-service/src/main/java/services/PredictionSettings.java",
+      "sha256": "07183ad87c5b3e51514093f3c3371cbdac0024c70a6df4c56891c2aab9fd53ad",
+      "size_bytes": 3320,
+      "tracked": true
+    },
+    {
+      "lfs_pointer": false,
+      "path": "services/prediction-service/src/main/java/services/CkdPredictionService.java",
+      "sha256": "17b73830cfa4b24f2cf4227a5d5627c16dc65769f4915a52c80ade3e0c9d5cf0",
+      "size_bytes": 8516,
+      "tracked": true
+    }
+  ],
+  "status": "blocked"
+}

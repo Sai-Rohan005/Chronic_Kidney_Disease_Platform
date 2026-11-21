@@ -54,6 +54,11 @@ provisioned dashboard. Without model files you can start only the API dependenci
 
 ## Tests and coverage
 
+For ML evaluation evidence, run `make eval`; the generated
+[ML evaluation report](services/ml-service/docs/ml_evaluation.md) currently records
+a blocked evaluation because no verified held-out datasets are supplied. This is
+separate from software tests and coverage.
+
 ```sh
 mvn clean verify                         # Unit/security/HTTP tests and JaCoCo gates
 mvn -Pdocker-integration clean verify    # Also real Mongo/Redis and WireMock E2E
