@@ -1,0 +1,65 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node modules
+node_modules/
+
+# Build output directories
+dist/
+dist-ssr/
+
+# Local environment files
+*.local
+*.env
+.env.*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+nodemon-debug.json
+package-lock.json
+*.sublime-workspace
+nodemon.json
+uploads/
+# Windows-specific files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.pth
+__pycache__/
+ckd_tabtransformer_artifacts_7
+tab_binary_8
+
+# macOS specific files
+*.sw?
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Model artifacts (example paths)
+routes/ckd_tabtransformer_artifacts_7/
+routes/ckd_tabtransformer_artifacts_7/**
+routes/tabtransformernewmodel
+
+# Large model files
+*.pth
+*.pt
+*.pkl
+
+# Ignore all uploads or other heavy folders
+uploads/

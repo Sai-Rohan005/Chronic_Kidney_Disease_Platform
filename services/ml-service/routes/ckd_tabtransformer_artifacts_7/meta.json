@@ -1,0 +1,56 @@
+{
+  "categorical_cols": [
+    "Red blood cells in urine",
+    "Pus cells in urine",
+    "Pus cell clumps in urine",
+    "Bacteria in urine",
+    "Hypertension (yes/no)",
+    "Diabetes mellitus (yes/no)",
+    "Coronary artery disease (yes/no)",
+    "Appetite (good/poor)",
+    "Pedal edema (yes/no)",
+    "Anemia (yes/no)"
+  ],
+  "numerical_cols": [
+    "Age of the patient",
+    "Blood pressure (mm/Hg)",
+    "Specific gravity of urine",
+    "Albumin in urine",
+    "Sugar in urine",
+    "Random blood glucose level (mg/dl)",
+    "Blood urea (mg/dl)",
+    "Serum creatinine (mg/dl)",
+    "Sodium level (mEq/L)",
+    "Potassium level (mEq/L)",
+    "Hemoglobin level (gms)",
+    "Packed cell volume (%)",
+    "White blood cell count (cells/cumm)",
+    "Red blood cell count (millions/cumm)"
+  ],
+  "cat_cardinalities": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "classes": [
+    "No_Disease",
+    "Stage_1",
+    "Stage_2",
+    "Stage_3",
+    "Stage_4",
+    "Stage_5"
+  ],
+  "config": {
+    "dim": 64,
+    "depth": 4,
+    "heads": 8,
+    "dropout": 0.2
+  }
+}
