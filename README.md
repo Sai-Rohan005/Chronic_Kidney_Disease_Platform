@@ -57,7 +57,7 @@ The backend comprises four Java 21/Spring Boot applications built with Maven.
 Python/FastAPI hosts the Torch models and OCR route. React/Vite builds the frontend,
 served by Nginx in Compose.
 
-
+```mermaid
 flowchart LR
     Browser["Browser"] --> Frontend["React + Nginx :3000"]
     subgraph APIs["Spring Boot services"]
@@ -93,7 +93,7 @@ flowchart LR
 
 
 Prediction flow
-
+```mermaid
 sequenceDiagram
     actor Doctor
     participant Web as Frontend / Nginx
@@ -155,7 +155,6 @@ sequenceDiagram
     end
     Web-->>Doctor: Display response
     Note over A,ML: Each service independently validates the forwarded JWT against Redis
-
 
 
 
