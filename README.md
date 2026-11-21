@@ -57,7 +57,7 @@ The backend comprises four Java 21/Spring Boot applications built with Maven.
 Python/FastAPI hosts the Torch models and OCR route. React/Vite builds the frontend,
 served by Nginx in Compose.
 
-mermaid
+```mermaid
 flowchart LR
     Browser["Browser"] --> Frontend["React + Nginx :3000"]
     subgraph APIs["Spring Boot services"]
@@ -92,8 +92,9 @@ flowchart LR
     ML -->|"HTTPS image download"| Images["Allow-listed image host"]
 
 
-Prediction Flow
-mermaid
+## Prediction Flow
+
+```mermaid
 sequenceDiagram
     actor Doctor
     participant Web as Frontend / Nginx
