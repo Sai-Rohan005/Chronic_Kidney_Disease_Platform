@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -26,15 +27,20 @@ public class AppointmentClient {
         this.endpoint = URI.create(appointmentUrl);
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getAppointment(String appointmentId) {
         URI requestUri = UriComponentsBuilder.fromUri(endpoint)
-                .queryParam("appointment_id", appointmentId)
-                .build()
+                .pathSegment("{id}")
                 .encode()
+                .buildAndExpand(appointmentId)
                 .toUri();
-        return restClient.get()
+        Map<String, Object> response = restClient.get()
                 .uri(requestUri)
                 .retrieve()
                 .body(RESPONSE_TYPE);
+        if (response == null || !(response.get("data") instanceof Map<?, ?>)) {
+            throw new RestClientException("Appointment response must contain a data object");
+        }
+        return (Map<String, Object>) response.get("data");
     }
 }

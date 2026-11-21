@@ -25,7 +25,7 @@ ckd-prediction:
   image-url: ${CKD_IMAGE_PREDICTION_URL:http://localhost:8001/routes/unet_predict}
 
 appointment:
-  appointment-url: ${APPOINTMENT_CLIENT_URL:${Appointment_client_Url:http://localhost:8082/appointments/getappointment}}
+  appointment-url: ${APPOINTMENT_CLIENT_URL:${Appointment_client_Url:http://localhost:8082/appointments}}
 
 report:
-  report-url: ${REPORT_CLIENT_URL:${Report_client_Url:http://localhost:8083/reports/store_report}}
+  report-url: ${REPORT_CLIENT_URL:${Report_client_Url:http://localhost:8083/reports}}
