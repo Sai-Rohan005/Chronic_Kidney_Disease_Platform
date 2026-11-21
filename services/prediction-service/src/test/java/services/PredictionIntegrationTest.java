@@ -48,6 +48,29 @@ class PredictionIntegrationTest {
     @AfterEach void stop() { SecurityContextHolder.clearContext(); runtime.close(); server.stop(); }
     private CkdPredictionService.PredictionResult predict() { return service.predict(Map.of("appointment_id", ID)); }
 
+    @Test void recordsStageTimersAndPropagatesCorrelationAcrossAllHttpCalls() {
+        org.slf4j.MDC.put("requestId", "prediction-observability-test");
+        try {
+            assertEquals(200, predict().status());
+            assertEquals(1, runtime.meters().get("ckd.prediction.total").tag("outcome", "success").timer().count());
+            assertEquals(1, runtime.meters().get("ckd.appointment.fetch").timer().count());
+            assertEquals(1, runtime.meters().get("ckd.model.call").tag("operation", "tabular").timer().count());
+            assertEquals(2, runtime.meters().get("ckd.model.call").tag("operation", "image").timer().count());
+            assertEquals(1, runtime.meters().get("ckd.report.store").tag("operation", "create").timer().count());
+            for (var event : server.getAllServeEvents()) {
+                assertEquals("prediction-observability-test", event.getRequest().getHeader("X-Request-Id"));
+            }
+        } finally { org.slf4j.MDC.clear(); }
+    }
+    @Test void failedCallsAreTimedWithoutPatientOrRequestIdTags() {
+        server.stubFor(post("/tab").willReturn(serverError()));
+        assertEquals(502, predict().status());
+        assertEquals(1, runtime.meters().get("ckd.model.call").tag("operation", "tabular").tag("outcome", "error").timer().count());
+        assertEquals(1, runtime.meters().get("ckd.prediction.total").tag("outcome", "error").timer().count());
+        for (var meter : runtime.meters().getMeters()) {
+            assertTrue(meter.getId().getTags().stream().allMatch(tag -> java.util.Set.of("operation", "outcome").contains(tag.getKey())));
+        }
+    }
     @Test void mlTimeoutIs503AndRetried() {
         server.stubFor(post("/tab").willReturn(okJson(MODEL).withFixedDelay(2000)));
         assertEquals(503, predict().status());

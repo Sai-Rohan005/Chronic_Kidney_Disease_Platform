@@ -1,4 +1,11 @@
 spring:
+  main:
+    banner-mode: "off"
+  autoconfigure:
+    exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/CKD_JAVA}
+    database: ${MONGODB_DATABASE:CKD_JAVA}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -23,3 +30,38 @@ app:
 ckd-prediction:
   tabular-url: ${CKD_TABULAR_PREDICTION_URL:http://localhost:8001/routes/tab_predict}
   image-url: ${CKD_IMAGE_PREDICTION_URL:http://localhost:8001/routes/unet_predict}
+
+# Operational endpoints use a separate loopback listener; application APIs retain JWT protection.
+management:
+  server:
+    port: ${MANAGEMENT_SERVER_PORT:9082}
+    address: 127.0.0.1
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        ckd.prediction.total: true
+        ckd.appointment.fetch: true
+        ckd.model.call: true
+        ckd.report.store: true
+
+logging:
+  structured:
+    format:
+      console: logstash
+    json:
+      exclude: stack_trace
+      add:
+        service: ${spring.application.name}
+  level:
+    org.springframework.web: ERROR
+    org.apache.coyote.http11: "OFF"

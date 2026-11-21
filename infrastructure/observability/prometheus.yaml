@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: auth-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['127.0.0.1:9081']
+  - job_name: appointment-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['127.0.0.1:9082']
+  - job_name: report-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['127.0.0.1:9083']
+  - job_name: prediction-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['127.0.0.1:9084']

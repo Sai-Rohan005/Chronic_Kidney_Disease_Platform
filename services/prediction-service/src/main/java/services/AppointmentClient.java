@@ -39,16 +39,17 @@ public class AppointmentClient {
                 .encode()
                 .buildAndExpand(appointmentId)
                 .toUri();
-        return runtime.call("Appointment", true, () -> {
+        return runtime.timed("ckd.appointment.fetch", "fetch", () -> runtime.call("Appointment", true, () -> {
             Map<String, Object> response = restClient.get()
                     .uri(requestUri)
                     .header(HttpHeaders.AUTHORIZATION, CurrentCaller.authorizationHeader())
+                    .header(com.ckd.auth.RequestCorrelation.HEADER, com.ckd.auth.RequestCorrelation.currentId())
                     .retrieve()
                     .body(RESPONSE_TYPE);
             if (response == null || !(response.get("data") instanceof Map<?, ?>)) {
                 throw new RestClientException("Appointment response must contain a data object");
             }
             return (Map<String, Object>) response.get("data");
-        });
+        }));
     }
 }

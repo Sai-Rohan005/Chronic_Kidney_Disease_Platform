@@ -21,9 +21,15 @@ public class PredictionRuntime implements AutoCloseable {
     private final ExecutorService images;
     private final ConcurrentMap<String, CircuitBreaker> circuits = new ConcurrentHashMap<>();
     private final TimeLimiter timeLimiter;
+    private final io.micrometer.core.instrument.MeterRegistry meters;
     private final Object[] appointmentLocks = new Object[64];
 
     public PredictionRuntime(PredictionSettings settings) {
+        this(settings, new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public PredictionRuntime(PredictionSettings settings, io.micrometer.core.instrument.MeterRegistry meters) {
+        this.meters = meters;
         settings.validate(); this.settings = settings;
         outbound = pool(settings.getOutboundConcurrency(), settings.getQueueCapacity(), "prediction-http-");
         images = pool(settings.getImageConcurrency(), settings.getQueueCapacity(), "prediction-image-");
@@ -39,12 +45,34 @@ public class PredictionRuntime implements AutoCloseable {
     // Capture identity per task; never use a globally inheritable security context with reused threads.
     private static <T> Callable<T> withCaller(Callable<T> work) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var mdc = org.slf4j.MDC.getCopyOfContextMap();
         return () -> {
             var context = SecurityContextHolder.createEmptyContext(); context.setAuthentication(authentication);
             SecurityContextHolder.setContext(context);
-            try { return work.call(); } finally { SecurityContextHolder.clearContext(); }
+            var previousMdc = org.slf4j.MDC.getCopyOfContextMap();
+            if (mdc == null) org.slf4j.MDC.clear(); else org.slf4j.MDC.setContextMap(mdc);
+            try { return work.call(); }
+            finally {
+                SecurityContextHolder.clearContext();
+                if (previousMdc == null) org.slf4j.MDC.clear(); else org.slf4j.MDC.setContextMap(previousMdc);
+            }
         };
     }
+    io.micrometer.core.instrument.MeterRegistry meters() { return meters; }
+
+    <T> T timed(String name, String operation, java.util.function.Supplier<T> work) {
+        var sample = io.micrometer.core.instrument.Timer.start(meters);
+        String outcome = "error";
+        try {
+            T result = work.get();
+            outcome = result instanceof CkdPredictionService.PredictionResult prediction && prediction.status() >= 400 ? "error" : "success";
+            return result;
+        } finally {
+            sample.stop(io.micrometer.core.instrument.Timer.builder(name)
+                    .tag("operation", operation).tag("outcome", outcome).register(meters));
+        }
+    }
+
     public <T> T call(String dependency, boolean idempotent, Callable<T> work) {
         CircuitBreaker breaker = circuits.computeIfAbsent(dependency, name -> CircuitBreaker.of(name,
                 CircuitBreakerConfig.custom().slidingWindowSize(settings.getCircuitMinimumCalls())

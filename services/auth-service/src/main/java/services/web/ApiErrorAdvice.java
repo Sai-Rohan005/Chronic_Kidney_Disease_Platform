@@ -32,7 +32,7 @@ public class ApiErrorAdvice extends ResponseEntityExceptionHandler implements Re
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> unexpected(Exception exception, jakarta.servlet.http.HttpServletRequest request) {
-        log.error("Unhandled request failure", exception);
+        log.error("Unhandled request failure: {}", exception.getClass().getSimpleName());
         return ResponseEntity.status(500).body(error(500, "An unexpected error occurred", request.getRequestURI()));
     }
 

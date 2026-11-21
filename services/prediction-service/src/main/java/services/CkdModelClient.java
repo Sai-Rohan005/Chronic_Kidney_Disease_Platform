@@ -51,14 +51,16 @@ public class CkdModelClient {
     }
 
     public Map<String, Object> predictClinicalData(Map<String, Object> clinicalData) {
-        return runtime.call("Tabular model", true, () -> post(tabularEndpoint, Map.of("root", clinicalData)));
+        return runtime.timed("ckd.model.call", "tabular", () ->
+                runtime.call("Tabular model", true, () -> post(tabularEndpoint, Map.of("root", clinicalData))));
     }
 
     public Map<String, Object> predictImage(String imageUrl) {
         if (!ImageUrlPolicy.allowed(imageUrl, runtime.settings)) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Ultrasound URL is not allowed");
         }
-        return runtime.call("Image model", true, () -> post(imageEndpoint, Map.of("url", imageUrl)));
+        return runtime.timed("ckd.model.call", "image", () ->
+                runtime.call("Image model", true, () -> post(imageEndpoint, Map.of("url", imageUrl))));
     }
 
     private Map<String, Object> post(URI endpoint, Map<String, Object> requestBody) {
@@ -66,6 +68,7 @@ public class CkdModelClient {
                 .timeout(requestTimeout)
                 .header("Content-Type", "application/json")
                 .header("Authorization", CurrentCaller.authorizationHeader())
+                .header(com.ckd.auth.RequestCorrelation.HEADER, com.ckd.auth.RequestCorrelation.currentId())
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestBody)))
                 .build();
 

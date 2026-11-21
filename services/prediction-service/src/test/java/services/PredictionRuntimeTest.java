@@ -12,6 +12,7 @@ class PredictionRuntimeTest {
     @Test void imageWorkIsConcurrentBoundedOrderedAndPropagatesCaller() {
         var settings = new PredictionSettings(); settings.setImageConcurrency(2);
         var started = new CountDownLatch(2); var active = new AtomicInteger(); var peak = new AtomicInteger();
+        org.slf4j.MDC.put("requestId", "concurrent-images");
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("doctor", "token"));
         try (var runtime = new PredictionRuntime(settings)) {
             List<Callable<Integer>> tasks = new ArrayList<>();
@@ -20,6 +21,7 @@ class PredictionRuntimeTest {
                 tasks.add(() -> {
                     peak.accumulateAndGet(active.incrementAndGet(), Math::max);
                     try {
+                        assertEquals("concurrent-images", org.slf4j.MDC.get("requestId"));
                         assertEquals("doctor", SecurityContextHolder.getContext().getAuthentication().getName());
                         started.countDown(); assertTrue(started.await(2, TimeUnit.SECONDS), "Two images must start concurrently");
                         return index;
@@ -28,9 +30,10 @@ class PredictionRuntimeTest {
             }
             assertEquals(List.of(0, 1, 2, 3), runtime.images(tasks));
             assertEquals(2, peak.get());
-            SecurityContextHolder.clearContext();
-            assertEquals(List.of(true), runtime.images(List.of(() -> SecurityContextHolder.getContext().getAuthentication() == null)));
-        } finally { SecurityContextHolder.clearContext(); }
+            assertEquals("concurrent-images", org.slf4j.MDC.get("requestId"));
+            SecurityContextHolder.clearContext(); org.slf4j.MDC.clear();
+            assertEquals(List.of(true), runtime.images(List.of(() -> SecurityContextHolder.getContext().getAuthentication() == null && org.slf4j.MDC.get("requestId") == null)));
+        } finally { SecurityContextHolder.clearContext(); org.slf4j.MDC.clear(); }
     }
     @Test void invalidConfigurationFailsBeforeStartingWork() {
         for (double weight : List.of(-1.0, Double.NaN, Double.POSITIVE_INFINITY)) {

@@ -109,8 +109,10 @@ Library tests also cover rate limiting, Redis outages, token TTL/revocation, and
 startup rejection of missing or short keys. Service tests cover password policy,
 ownership, and forwarded tokens. Controlled model outputs are test fixtures.
 
-For a full build, `mvn verify` also runs the existing application-context smoke
-tests, which require `JWT_SECRET` in the environment. Independently built service
+For a full build, `mvn verify` runs the real-HTTP startup contracts and coverage
+gates. Tests generate signing keys; no configured `JWT_SECRET` is needed. The
+former empty context smoke classes have been removed. See [testing](../testing.md)
+for Docker-backed flows and the coverage ratchet. Independently built service
 repositories must first install or publish the library:
 
 ```sh
@@ -123,3 +125,12 @@ and service tests. The library and this ADR were outside the repository; bringin
 them into the reactor makes the implementation buildable from this checkout.
 No claim is made that the existing service tests were originally written here
 before those pre-existing changes.
+
+## Operational management listeners
+
+Actuator adds a separate loopback-only listener for health, metrics, and Prometheus.
+Those three operational GET surfaces can be scraped without a patient JWT; all
+other management paths are denied. The application-port catch-all JWT policy is
+unchanged. This exception is bounded by the local listening port, not a caller's
+Host/header value. See [observability](../observability.md) for ports and the local
+Prometheus/Grafana profile; keep management ports off untrusted networks.

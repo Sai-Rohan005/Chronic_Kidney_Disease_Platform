@@ -1,3 +1,4 @@
+import logging
 # import torch
 # import torch.nn as nn
 # from fastapi import FastAPI, Request
@@ -97,7 +98,7 @@
 # model.load_state_dict(state_dict)
 # model.eval()
 
-# print("✅ Model loaded successfully")
+# logging.getLogger("ckd.model").info("model_loaded", extra={"event": "model_loaded"})
 
 
 
@@ -253,7 +254,7 @@ state_dict = torch.load(MODEL_PATH, map_location=device)
 model = TabTransformer(cat_cardinalities=cat_cardinalities, num_numeric=len(numerical_cols)).to(device)
 model.load_state_dict(state_dict)
 model.eval()
-print("✅ Model loaded successfully")
+logging.getLogger("ckd.model").info("model_loaded", extra={"event": "model_loaded"})
 
 def preprocess_input(data: dict, numerical_cols: list, categorical_cols: list):
     processed = {}
@@ -312,6 +313,5 @@ async def predict(request: Request):
             }
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logging.getLogger("ckd.model").error("model_failure", extra={"event": "model_failure"})
         return {"error": str(e)}

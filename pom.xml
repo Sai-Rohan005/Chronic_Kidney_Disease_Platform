@@ -9,4 +9,10 @@
     <module>services/prediction-service</module>
     <module>services/report-service</module>
   </modules>
+  <profiles>
+    <profile>
+      <id>docker-integration</id>
+      <modules><module>integration-tests</module></modules>
+    </profile>
+  </profiles>
 </project>

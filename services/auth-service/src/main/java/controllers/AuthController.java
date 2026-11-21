@@ -50,11 +50,9 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> getUserByToken(
             @RequestHeader("Authorization") String token
     ) {
-        System.out.println(">>> AuthController.getUserByToken HIT");
 
         UserResult result = authentication.getUserByToken(token);
 
-        System.out.println(">>> getUserByToken status = " + result.status());
 
         return response(result);
     }

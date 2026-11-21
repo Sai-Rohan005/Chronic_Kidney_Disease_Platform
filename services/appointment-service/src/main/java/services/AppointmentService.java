@@ -273,17 +273,10 @@ public class AppointmentService {
     private void removeIncompleteAppointment(String appointmentId) {
         try {
             if (!appointmentRepository.deleteAppointment(appointmentId)) {
-                logger.error(
-                        "Incomplete appointment {} could not be removed",
-                        appointmentId
-                );
+                logger.error("Incomplete appointment cleanup failed");
             }
         } catch (RuntimeException exception) {
-            logger.error(
-                    "Failed to remove incomplete appointment {}",
-                    appointmentId,
-                    exception
-            );
+            logger.error("Incomplete appointment cleanup failed: {}", exception.getClass().getSimpleName());
         }
     }
 

@@ -27,6 +27,10 @@ public class CkdPredictionService {
     public PredictionResult predict(Map<String, Object> body) { return predict(body, false); }
 
     public PredictionResult predict(Map<String, Object> body, boolean force) {
+        return runtime.timed("ckd.prediction.total", "predict", () -> predictTimed(body, force));
+    }
+
+    private PredictionResult predictTimed(Map<String, Object> body, boolean force) {
         CurrentCaller.requireRole("Doctor");
         String id = body == null ? null : stringValue(body.get("appointment_id"));
         if (!ObjectId.isValid(id)) return failure(400, "A valid appointment_id is required");
@@ -107,16 +111,18 @@ public class CkdPredictionService {
     }
 
     private static double ckdProbability(Map<String, Object> prediction) {
-        Object value = prediction.get("probabilities");
+        Object value = prediction == null ? null : prediction.get("probabilities");
         if (!(value instanceof List<?> probabilities) || probabilities.size() != 2
-                || !(probabilities.get(1) instanceof Number probability)) {
+                || !(probabilities.get(0) instanceof Number nonCkd)
+                || !(probabilities.get(1) instanceof Number ckd)) {
             throw new PredictionException("Prediction service returned invalid probabilities");
         }
-        double result = probability.doubleValue();
-        if (!Double.isFinite(result) || result < 0.0 || result > 1.0) {
+        double first = nonCkd.doubleValue(), second = ckd.doubleValue();
+        if (!Double.isFinite(first) || !Double.isFinite(second) || first < 0 || first > 1 || second < 0 || second > 1
+                || Math.abs(first + second - 1.0) > 1e-6) {
             throw new PredictionException("Prediction service returned invalid probabilities");
         }
-        return result;
+        return second;
     }
 
     private static List<String> imageUrls(Object value) {

@@ -1,3 +1,4 @@
+import logging
 from io import BytesIO
 import torch
 import torch.nn as nn
@@ -323,8 +324,7 @@ async def predict_unet(request: Request):
         }
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logging.getLogger("ckd.model").error("model_failure", extra={"event": "model_failure"})
         return {"error": str(e)}
 
 

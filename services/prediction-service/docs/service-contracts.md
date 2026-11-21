@@ -107,8 +107,9 @@ From the workspace root:
 mvn '-Dtest=*ContractTest,ServiceClientsTest' -Dsurefire.failIfNoSpecifiedTests=false test
 ```
 
-Full suites use `mvn test` from the workspace root. All application-context smoke
-tests now require a valid base64 `JWT_SECRET` from the environment. Independent
+Full suites and coverage gates use `mvn verify` from the workspace root. Startup
+contracts generate their own signing keys; no configured `JWT_SECRET` is needed
+for tests. Runtime applications still require it. Independent
 repository builds must install or publish `shared-auth` first. The focused tests need no
 secrets or running MongoDB, Redis, or ML server. Mockito uses its subclass mock
 maker in provider tests so they do not need JVM agent attachment.
