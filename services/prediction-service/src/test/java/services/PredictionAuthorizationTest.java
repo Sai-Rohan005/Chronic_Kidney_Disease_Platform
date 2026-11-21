@@ -8,14 +8,15 @@ import org.springframework.web.server.ResponseStatusException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 class PredictionAuthorizationTest {
+    private final PredictionRuntime runtime = new PredictionRuntime(new PredictionSettings());
     private static final String ID = "507f1f77bcf86cd799439011";
-    @AfterEach void clear() { SecurityContextHolder.clearContext(); }
+    @AfterEach void clear() { runtime.close(); SecurityContextHolder.clearContext(); }
     @Test void serviceRejectsPatientsBeforeAnyUpstreamCall() {
         var appointments = mock(AppointmentClient.class); var reports = mock(ReportClient.class); var models = mock(CkdModelClient.class);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("p@example.invalid", "token",
                 List.of(new SimpleGrantedAuthority("ROLE_Patient"))));
         assertEquals(403, assertThrows(ResponseStatusException.class,
-                () -> new CkdPredictionService(appointments, reports, models).predict(Map.of("appointment_id", ID))).getStatusCode().value());
+                () -> new CkdPredictionService(appointments, reports, models, runtime).predict(Map.of("appointment_id", ID))).getStatusCode().value());
         verifyNoInteractions(appointments, reports, models);
     }
     @Test void serviceRejectsUnassignedDoctor() {
@@ -24,7 +25,7 @@ class PredictionAuthorizationTest {
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("other@example.invalid", "token",
                 List.of(new SimpleGrantedAuthority("ROLE_Doctor"))));
         assertEquals(403, assertThrows(ResponseStatusException.class,
-                () -> new CkdPredictionService(appointments, reports, models).predict(Map.of("appointment_id", ID))).getStatusCode().value());
+                () -> new CkdPredictionService(appointments, reports, models, runtime).predict(Map.of("appointment_id", ID))).getStatusCode().value());
         verifyNoInteractions(reports, models);
     }
 }

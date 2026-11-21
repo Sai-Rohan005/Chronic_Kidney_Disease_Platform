@@ -295,13 +295,9 @@ async def predict_unet(request: Request):
         if not img_url:
             return {"error": "No image URL provided"}
 
-        # Load image from URL or local path
-        if img_url.startswith("http://") or img_url.startswith("https://"):
-            response = requests.get(img_url)
-            response.raise_for_status()  # Ensure download succeeded
-            image_pil = Image.open(BytesIO(response.content)).convert("RGB")
-        else:
-            image_pil = Image.open(img_url).convert("RGB")
+        # Enforce the allow-list at the actual fetch; never follow redirects or open local paths.
+        from safe_images import download_image
+        image_pil = Image.open(BytesIO(download_image(img_url))).convert("RGB")
 
         # Run UNet to get mask
         mask_np = get_mask(image_pil)  # Your existing function

@@ -24,12 +24,13 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
 class ServiceClientsTest {
+    private final PredictionRuntime runtime = new PredictionRuntime(new PredictionSettings());
     @org.junit.jupiter.api.BeforeEach void caller() {
         org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
                 new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("doctor@example.invalid", "caller-token",
                         java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_Doctor"))));
     }
-    @org.junit.jupiter.api.AfterEach void clearCaller() { org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
+    @org.junit.jupiter.api.AfterEach void clearCaller() { runtime.close(); org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
 
 
     @Test
@@ -37,7 +38,7 @@ class ServiceClientsTest {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         AppointmentClient client = new AppointmentClient(
-                builder, defaultEndpoint("appointment.appointment-url")
+                builder, defaultEndpoint("appointment.appointment-url"), runtime
         );
 
         server.expect(requestTo(
@@ -63,7 +64,7 @@ class ServiceClientsTest {
         RestClient.Builder builder = RestClient.builder();
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
         ReportClient client = new ReportClient(
-                builder, defaultEndpoint("report.report-url")
+                builder, defaultEndpoint("report.report-url"), runtime
         );
         Map<String, Object> report = Map.of(
                 "appointment_id", "507f1f77bcf86cd799439011",
@@ -91,10 +92,10 @@ class ServiceClientsTest {
         for (String body : List.of("{}", "{\"data\":null}", "{\"data\":[]}")) {
             RestClient.Builder builder = RestClient.builder();
             MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-            AppointmentClient client = new AppointmentClient(builder, defaultEndpoint("appointment.appointment-url"));
+            AppointmentClient client = new AppointmentClient(builder, defaultEndpoint("appointment.appointment-url"), runtime);
             server.expect(requestTo("http://localhost:8082/appointments/507f1f77bcf86cd799439011"))
                     .andRespond(withSuccess(body, MediaType.APPLICATION_JSON));
-            assertThrows(RestClientException.class, () -> client.getAppointment("507f1f77bcf86cd799439011"));
+            assertThrows(UpstreamException.class, () -> client.getAppointment("507f1f77bcf86cd799439011"));
             server.verify();
         }
     }

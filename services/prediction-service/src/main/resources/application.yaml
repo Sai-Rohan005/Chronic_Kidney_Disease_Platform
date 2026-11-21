@@ -21,6 +21,19 @@ app:
     secret: ${JWT_SECRET}
 
 ckd-prediction:
+  # Preserve the existing equal-weight mean and decision threshold explicitly.
+  tabular-weight: ${PREDICTION_TABULAR_WEIGHT:0.5}
+  image-weight: ${PREDICTION_IMAGE_WEIGHT:0.5}
+  threshold: ${PREDICTION_THRESHOLD:0.5}
+  allowed-image-hosts: ${PREDICTION_IMAGE_HOSTS:res.cloudinary.com}
+  image-concurrency: ${PREDICTION_IMAGE_CONCURRENCY:4}
+  outbound-concurrency: ${PREDICTION_OUTBOUND_CONCURRENCY:8}
+  queue-capacity: ${PREDICTION_QUEUE_CAPACITY:32}
+  timeout-millis: ${PREDICTION_TIMEOUT_MILLIS:30000}
+  attempts: ${PREDICTION_ATTEMPTS:3}
+  backoff-millis: ${PREDICTION_BACKOFF_MILLIS:100}
+  circuit-minimum-calls: ${PREDICTION_CIRCUIT_MINIMUM_CALLS:10}
+  circuit-open-millis: ${PREDICTION_CIRCUIT_OPEN_MILLIS:30000}
   tabular-url: ${CKD_TABULAR_PREDICTION_URL:http://localhost:8001/routes/tab_predict}
   image-url: ${CKD_IMAGE_PREDICTION_URL:http://localhost:8001/routes/unet_predict}
 

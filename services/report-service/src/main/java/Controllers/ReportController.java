@@ -18,6 +18,11 @@ public class ReportController {
         this.reportService = reportService;
     }
 
+    @GetMapping("/{appointmentId}")
+    public ResponseEntity<Map<String, Object>> getReportById(@PathVariable("appointmentId") String appointmentId) {
+        return response(reportService.getReport(appointmentId));
+    }
+
     @PostMapping("/getReport")
     public ResponseEntity<Map<String, Object>> getReport(
             @RequestBody Map<String,Object> body

@@ -4,6 +4,7 @@ import services.CkdPredictionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,9 +22,10 @@ public class PredictionController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> predict(
-            @RequestBody Map<String, Object> body
+            @RequestBody Map<String, Object> body,
+            @RequestParam(name = "force", defaultValue = "false") boolean force
     ) {
-        CkdPredictionService.PredictionResult result = predictionService.predict(body);
+        CkdPredictionService.PredictionResult result = predictionService.predict(body, force);
         return ResponseEntity.status(result.status()).body(result.body());
     }
 }

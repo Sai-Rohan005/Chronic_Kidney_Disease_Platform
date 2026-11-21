@@ -29,6 +29,7 @@ public class ReportService {
             return failure(400, "A valid appointment_id is required");
         }
 
+        appointmentId = new org.bson.types.ObjectId(appointmentId).toHexString();
         requireAppointment(appointmentId);
         Document report = reportsRepository.getReport(appointmentId);
         if (report == null) {
@@ -44,6 +45,7 @@ public class ReportService {
             return failure(400, "A valid appointment_id is required");
         }
 
+        appointmentId = new org.bson.types.ObjectId(appointmentId).toHexString();
         requireAppointment(appointmentId);
         Map<String, Object> reportData = extractReportFields(body);
         if (reportData.isEmpty()) {
@@ -53,7 +55,12 @@ public class ReportService {
             return failure(409, "A report already exists for this appointment");
         }
 
-        Document report = reportsRepository.createReport(appointmentId, reportData);
+        Document report;
+        try { report = reportsRepository.createReport(appointmentId, reportData); }
+        catch (com.mongodb.MongoWriteException exception) {
+            if (exception.getError().getCode() == 11000) return failure(409, "A report already exists for this appointment");
+            throw exception;
+        }
         return new ReportResult(201, Map.of(
                 "message", "Report created successfully",
                 "report", report
@@ -68,6 +75,7 @@ public class ReportService {
         if (!validAppointmentId(appointmentId)) {
             return failure(400, "A valid appointment_id is required");
         }
+        appointmentId = new org.bson.types.ObjectId(appointmentId).toHexString();
         requireAppointment(appointmentId);
         if (requestedUpdates == null || requestedUpdates.isEmpty()) {
             return failure(400, "At least one report field is required");

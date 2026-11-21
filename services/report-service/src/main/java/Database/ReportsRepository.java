@@ -22,6 +22,8 @@ public class ReportsRepository {
 
     public ReportsRepository(DB db) {
         this.reports = db.getDatabase().getCollection("reports");
+        this.reports.createIndex(com.mongodb.client.model.Indexes.ascending("appointment_id"),
+                new com.mongodb.client.model.IndexOptions().unique(true));
         this.appointments = db.getDatabase().getCollection("appointments");
     }
 

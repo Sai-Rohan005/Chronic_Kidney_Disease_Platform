@@ -31,16 +31,17 @@ class PredictionSecurityTest extends SecurityTestSupport {
         @Bean AppointmentClient appointments() {
             var client = mock(AppointmentClient.class);
             when(client.getAppointment(ID)).thenReturn(Map.of("patient_email", "owner@example.invalid", "doctor_email", "assigned@example.invalid",
-                    "clinical_data", Map.of("age", 50), "ultrasound_data", List.of("https://example.invalid/test.png"))); return client;
+                    "clinical_data", Map.of("age", 50), "ultrasound_data", List.of("https://res.cloudinary.com/demo/test.png"))); return client;
         }
-        @Bean ReportClient reports() { var client = mock(ReportClient.class); when(client.storeReport(anyMap())).thenReturn(Map.of("report", Map.of())); return client; }
+        @Bean ReportClient reports() { var client = mock(ReportClient.class); when(client.getReport(anyString())).thenReturn(null); when(client.storeReport(anyMap())).thenReturn(Map.of("report", Map.of())); return client; }
         @Bean CkdModelClient models() {
             var client = mock(CkdModelClient.class);
             // These are test fixtures, not measured model performance.
             var fixture = Map.<String, Object>of("prediction", 0, "probabilities", List.of(0.8, 0.2));
             when(client.predictClinicalData(anyMap())).thenReturn(fixture); when(client.predictImage(anyString())).thenReturn(fixture); return client;
         }
-        @Bean CkdPredictionService service(AppointmentClient a, ReportClient r, CkdModelClient m) { return new CkdPredictionService(a, r, m); }
+        @Bean PredictionRuntime runtime() { return new PredictionRuntime(new PredictionSettings()); }
+        @Bean CkdPredictionService service(AppointmentClient a, ReportClient r, CkdModelClient m, PredictionRuntime runtime) { return new CkdPredictionService(a, r, m, runtime); }
         @Bean PredictionController controller(CkdPredictionService service) { return new PredictionController(service); }
     }
 }

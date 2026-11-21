@@ -9,7 +9,12 @@ import org.springframework.web.client.RestClient;
 public class RestClientConfiguration {
     @Bean
     @Scope("prototype")
-    public RestClient.Builder restClientBuilder() {
-        return RestClient.builder();
+    public RestClient.Builder restClientBuilder(PredictionSettings settings) {
+        var http = java.net.http.HttpClient.newBuilder()
+                .connectTimeout(java.time.Duration.ofMillis(settings.getTimeoutMillis()))
+                .followRedirects(java.net.http.HttpClient.Redirect.NEVER).build();
+        var factory = new org.springframework.http.client.JdkClientHttpRequestFactory(http);
+        factory.setReadTimeout(java.time.Duration.ofMillis(settings.getTimeoutMillis()));
+        return RestClient.builder().requestFactory(factory);
     }
 }

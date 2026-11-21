@@ -22,7 +22,8 @@ import java.util.Map;
 @Component
 public class CkdModelClient {
 
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
+    private final Duration requestTimeout;
+    private final PredictionRuntime runtime;
 
     private final HttpClient httpClient;
     private final Gson gson;
@@ -34,29 +35,35 @@ public class CkdModelClient {
             @Value("${ckd-prediction.tabular-url:http://localhost:8001/routes/tab_predict}")
             String tabularUrl,
             @Value("${ckd-prediction.image-url:http://localhost:8001/routes/unet_predict}")
-            String imageUrl
+            String imageUrl, PredictionRuntime runtime
     ) {
-        this(HttpClient.newBuilder().connectTimeout(REQUEST_TIMEOUT).build(), tabularUrl, imageUrl);
+        this(HttpClient.newBuilder().connectTimeout(Duration.ofMillis(runtime.settings.getTimeoutMillis()))
+                .followRedirects(HttpClient.Redirect.NEVER).build(), tabularUrl, imageUrl, runtime);
     }
 
-    CkdModelClient(HttpClient httpClient, String tabularUrl, String imageUrl) {
+    CkdModelClient(HttpClient httpClient, String tabularUrl, String imageUrl, PredictionRuntime runtime) {
         this.httpClient = httpClient;
+        this.runtime = runtime;
+        this.requestTimeout = Duration.ofMillis(runtime.settings.getTimeoutMillis());
         this.gson = new Gson();
         this.tabularEndpoint = URI.create(tabularUrl);
         this.imageEndpoint = URI.create(imageUrl);
     }
 
     public Map<String, Object> predictClinicalData(Map<String, Object> clinicalData) {
-        return post(tabularEndpoint, Map.of("root", clinicalData));
+        return runtime.call("Tabular model", true, () -> post(tabularEndpoint, Map.of("root", clinicalData)));
     }
 
     public Map<String, Object> predictImage(String imageUrl) {
-        return post(imageEndpoint, Map.of("url", imageUrl));
+        if (!ImageUrlPolicy.allowed(imageUrl, runtime.settings)) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Ultrasound URL is not allowed");
+        }
+        return runtime.call("Image model", true, () -> post(imageEndpoint, Map.of("url", imageUrl)));
     }
 
     private Map<String, Object> post(URI endpoint, Map<String, Object> requestBody) {
         HttpRequest request = HttpRequest.newBuilder(endpoint)
-                .timeout(REQUEST_TIMEOUT)
+                .timeout(requestTimeout)
                 .header("Content-Type", "application/json")
                 .header("Authorization", CurrentCaller.authorizationHeader())
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestBody)))
@@ -67,9 +74,9 @@ public class CkdModelClient {
             response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new PredictionException("Prediction request was interrupted", exception);
+            throw new UpstreamException(503, false, "Prediction request was interrupted", exception);
         } catch (IOException exception) {
-            throw new PredictionException("Prediction service could not be reached", exception);
+            throw new UpstreamException(503, true, "Prediction service could not be reached", exception);
         }
 
         if (response.statusCode() == 401 || response.statusCode() == 403) {
@@ -77,9 +84,8 @@ public class CkdModelClient {
                     org.springframework.http.HttpStatusCode.valueOf(response.statusCode()), "Model access denied");
         }
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new PredictionException(
-                    "Prediction service returned HTTP " + response.statusCode()
-            );
+            throw new UpstreamException(response.statusCode() == 503 || response.statusCode() == 504 ? 503 : 502,
+                    response.statusCode() >= 500, "Prediction service returned HTTP " + response.statusCode(), null);
         }
         return parsePrediction(response.body());
     }

@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 class RestClientConfigurationContractTest {
     @Test void clientsReceiveIndependentBuilders() {
-        try (var context = new AnnotationConfigApplicationContext(RestClientConfiguration.class)) {
+        try (var context = new AnnotationConfigApplicationContext(RestClientConfiguration.class, PredictionSettings.class)) {
             assertNotSame(context.getBean(RestClient.Builder.class), context.getBean(RestClient.Builder.class));
         }
     }
