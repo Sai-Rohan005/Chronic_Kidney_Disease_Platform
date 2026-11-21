@@ -57,7 +57,7 @@ The backend comprises four Java 21/Spring Boot applications built with Maven.
 Python/FastAPI hosts the Torch models and OCR route. React/Vite builds the frontend,
 served by Nginx in Compose.
 
-```mermaid
+mermaid
 flowchart LR
     Browser["Browser"] --> Frontend["React + Nginx :3000"]
     subgraph APIs["Spring Boot services"]
@@ -92,8 +92,8 @@ flowchart LR
     ML -->|"HTTPS image download"| Images["Allow-listed image host"]
 
 
-Prediction flow
-```mermaid
+Prediction Flow
+mermaid
 sequenceDiagram
     actor Doctor
     participant Web as Frontend / Nginx
@@ -102,61 +102,74 @@ sequenceDiagram
     participant A as Appointment
     participant R as Report
     participant DB as MongoDB
-    participant ML as FastAPI models
+    participant ML as FastAPI Models
 
-    Doctor->>Web: Submit appointment_id with Bearer token
-    Web->>P: POST /predictions?force=false + X-Request-Id
-    P->>Redis: Check active jti after local JWT verification
-    Note right of P: Require Doctor role<br/>Normalize ID<br/>Acquire local appointment lock
-    P->>A: GET /appointments/{id} (forward token + request ID)
-    A->>DB: Fetch appointment and check ownership
-    DB-->>A: clinical_data, ultrasound_data, assignment
+    Doctor->>Web: Submit appointment ID with Bearer token
+    Web->>P: POST predictions with force=false
+    P->>Redis: Verify active JWT jti
+
+    Note right of P: Require Doctor role
+    Note right of P: Normalize ID and acquire appointment lock
+
+    P->>A: GET appointment by ID
+    A->>DB: Fetch appointment and verify ownership
+    DB-->>A: Clinical data and ultrasound data
     A-->>P: Appointment data
-    Note right of P: Verify Doctor is assigned
-    P->>R: GET /reports/{id} (forward token + request ID)
-    R->>DB: Authorize against appointment and find report
+
+    Note right of P: Verify Doctor assignment
+
+    P->>R: GET report by appointment ID
+    R->>DB: Authorize and find existing report
     DB-->>R: Existing report or absent
     R-->>P: Report or 404
 
     alt Report exists and force is false
         P-->>Web: Return saved report
-    else New prediction or force=true
-        Note right of P: Validate clinical data<br/>and allow-listed HTTPS image URLs
-        P->>ML: POST /routes/tab_predict
+    else New prediction or force is true
+        Note right of P: Validate clinical data and HTTPS image URLs
+
+        P->>ML: POST tabular prediction
         ML-->>P: Tabular model response
+
         par Concurrent image inference
-            P->>ML: POST /routes/unet_predict
+            P->>ML: POST UNet prediction for image A
             ML-->>P: Image response A
         and
-            P->>ML: POST /routes/unet_predict
-            ML-->>P: Other image responses
+            P->>ML: POST UNet prediction for image B
+            ML-->>P: Image response B
         end
-        Note right of P: Validate probabilities<br/>Average images<br/>Fuse modalities<br/>Apply threshold
+
+        Note right of P: Validate probabilities
+        Note right of P: Average image predictions
+        Note right of P: Fuse modalities and apply threshold
+
         alt Report existed before forced computation
-            P->>R: PATCH /reports/{id}
+            P->>R: PATCH report
         else No report existed
-            P->>R: POST /reports
+            P->>R: POST new report
         end
-        R->>DB: Authorize and persist (unique appointment_id index)
+
+        R->>DB: Authorize and persist report
+
         alt Write succeeds
             DB-->>R: Stored report
             R-->>P: Report envelope
-        else Concurrent create conflict (409)
-            alt force=true
-                P->>R: PATCH /reports/{id}
-            else force=false
-                P->>R: GET /reports/{id}
+        else Concurrent create conflict
+            alt force is true
+                P->>R: PATCH report
+            else force is false
+                P->>R: GET existing report
             end
-            R->>DB: Authorize and read/update winner
+            R->>DB: Read or update authoritative report
             DB-->>R: Authoritative report
             R-->>P: Authoritative report
         end
-        P-->>Web: Report envelope + fusion metadata
+
+        P-->>Web: Report envelope and fusion metadata
     end
+
     Web-->>Doctor: Display response
-    Note over A,ML: Each service independently validates the forwarded JWT against Redis
-
-
+    Note over A,ML: Each service independently validates forwarded JWT against Redis
 
 API referenceBearer = Authorization: Bearer <token>. Supported roles: Patient and Doctor.
 Auth — port 8081
