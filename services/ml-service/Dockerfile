@@ -18,6 +18,8 @@ WORKDIR /app
 COPY --chown=10001:10001 services/ml-service/ /app/ckd_ml/
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 ML_MODELS_DIR=/models HF_HOME=/home/ckd/.cache/huggingface
 USER 10001:10001
+# Check native-library and processor imports without loading checkpoints or producing predictions.
+RUN python -c "import fastapi, torch, torchvision, paddle, cv2; from transformers import TrOCRProcessor, VisionEncoderDecoderModel"
 EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=300s --retries=3 CMD ["python", "-m", "ckd_ml.healthcheck"]
 CMD ["uvicorn", "ckd_ml.main:app", "--host", "0.0.0.0", "--port", "8001", "--no-access-log"]

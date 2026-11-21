@@ -2,7 +2,7 @@
 
 The four Spring Boot services expose Actuator health, metrics, and Prometheus.
 Application APIs keep their existing JWT and ownership rules. Operational endpoints
-use separate loopback listeners and do not accept an application token as a reason
+use separate listeners (loopback for host runs, private unpublished ports in Compose) and do not accept an application token as a reason
 to expose other management endpoints.
 
 | Service | Application port | Loopback management port |
@@ -19,9 +19,8 @@ health checks are enabled in normal deployments. Spring's Mongo health client
 uses `MONGODB_URI` and `MONGODB_DATABASE`, matching the application's server and database. Tests disable
 external health contributors explicitly so they need no running databases.
 Application-port `/actuator/**` requests retain JWT protection, with no management
-endpoints mounted there. Non-exposed management paths are denied. Binding management
-to loopback is the access boundary: do not publish these ports on an untrusted
-network. `MANAGEMENT_SERVER_PORT` can override a service's port; it must stay
+endpoints mounted there. Non-exposed management paths are denied. Host services bind management to loopback. In Compose, it binds inside the private
+container network and its ports are not published; see [deployment](deployment.md). `MANAGEMENT_SERVER_PORT` can override a service's port; it must stay
 separate from the application listener, and scrape targets must be updated too.
 
 ## Correlation and privacy
@@ -78,11 +77,11 @@ underscores and the `_seconds_count`, `_seconds_sum`, and `_seconds_bucket` suff
 
 ## Local Prometheus and Grafana
 
-Run the Java services on the host, then set `GRAFANA_ADMIN_PASSWORD` through your
-shell or secret manager and start the optional monitoring profile:
+Set up `.env` and the full Compose stack as described in [deployment](deployment.md),
+then start the optional monitoring profile:
 
 ```sh
-docker compose --profile observability up -d
+docker compose --profile observability up --build -d
 ```
 
 No default Grafana password is committed. Its initial username defaults to `admin`
@@ -90,16 +89,14 @@ and can be overridden with `GRAFANA_ADMIN_USER`. Grafana persists its database;
 changing the environment password after initialization does not reset an existing
 administrator's password.
 
-The profile uses host networking to reach the services' loopback management ports.
-This works on Linux; Docker Desktop requires **Enable host networking** in its
-network settings ([Docker host-network documentation](https://docs.docker.com/engine/network/drivers/host/)).
-It avoids exposing the management listeners just to make container scraping work.
-Prometheus listens on loopback port 9090 and Grafana on loopback port 3000. Pinned
+Prometheus and Grafana use Compose DNS names; host networking is not required.
+Management ports are reachable only inside the container network.
+Prometheus listens on loopback port 9090 and Grafana on loopback port 3001. Pinned
 images are [Prometheus 3.16.0](https://prometheus.io/download/) and
 [Grafana 13.3.0](https://grafana.com/grafana/download/13.3.0?edition=oss); configuration is bind-mounted
 read-only and monitoring data uses named volumes.
 
-Open [Grafana](http://localhost:3000), sign in, and open **CKD / CKD Services**.
+Open [Grafana](http://localhost:3001), sign in, and open **CKD / CKD Services**.
 The Prometheus datasource and the single dashboard JSON are provisioned automatically:
 
 - `infrastructure/observability/prometheus.yaml`: four scrape jobs, every 15 seconds.
@@ -128,5 +125,5 @@ docker compose --profile observability config --quiet
 ```
 
 The Docker configuration check needs `GRAFANA_ADMIN_PASSWORD` in the environment.
-A running Docker daemon and the host-network prerequisite are needed to start the
+A running Docker daemon is needed to start the
 monitoring containers; configuration validation alone does not verify a live scrape.

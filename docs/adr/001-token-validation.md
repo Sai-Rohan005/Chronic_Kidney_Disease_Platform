@@ -128,9 +128,11 @@ before those pre-existing changes.
 
 ## Operational management listeners
 
-Actuator adds a separate loopback-only listener for health, metrics, and Prometheus.
+Actuator adds a separate listener for health, metrics, and Prometheus. Host runs
+bind it to loopback; Compose binds it inside the container network without host
+publication.
 Those three operational GET surfaces can be scraped without a patient JWT; all
 other management paths are denied. The application-port catch-all JWT policy is
 unchanged. This exception is bounded by the local listening port, not a caller's
-Host/header value. See [observability](../observability.md) for ports and the local
+Host/header value. See [observability](../observability.md) for ports and the
 Prometheus/Grafana profile; keep management ports off untrusted networks.

@@ -1,0 +1,180 @@
+name: ckd-platform
+
+x-java-environment: &java-environment
+  JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+  MONGODB_URI: mongodb://${MONGO_USERNAME:-ckd}:${MONGO_PASSWORD:?Set MONGO_PASSWORD in .env}@mongo:27017/${MONGODB_DATABASE:-CKD_JAVA}?authSource=admin
+  MONGODB_DATABASE: ${MONGODB_DATABASE:-CKD_JAVA}
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+  MANAGEMENT_SERVER_ADDRESS: 0.0.0.0
+
+x-java: &java
+  restart: unless-stopped
+  init: true
+  depends_on:
+    mongo: {condition: service_healthy}
+    redis: {condition: service_healthy}
+
+services:
+  mongo:
+    image: mongo:8.0.16
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-ckd}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Set MONGO_PASSWORD in .env}
+    volumes: [mongo-data:/data/db]
+    healthcheck:
+      test: [CMD-SHELL, 'mongosh --quiet --eval ''const a=db.getSiblingDB("admin"); a.auth(process.env.MONGO_INITDB_ROOT_USERNAME,process.env.MONGO_INITDB_ROOT_PASSWORD); if(a.runCommand({ping:1}).ok!==1) quit(1);'' >/dev/null']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:7.4.2-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    command: [redis-server, --appendonly, 'yes', --requirepass, '${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}']
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$REDIS_PASSWORD" redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  auth:
+    <<: *java
+    image: ckd/auth:local
+    build: {context: ., dockerfile: services/auth-service/Dockerfile}
+    environment:
+      <<: *java-environment
+      LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-5}
+      LOGIN_RATE_WINDOW_SECONDS: ${LOGIN_RATE_WINDOW_SECONDS:-60}
+    ports: ['127.0.0.1:${AUTH_PORT:-8081}:8081']
+
+  appointment:
+    <<: *java
+    image: ckd/appointment:local
+    build: {context: ., dockerfile: services/appointment-service/Dockerfile}
+    environment:
+      <<: *java-environment
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+    ports: ['127.0.0.1:${APPOINTMENT_PORT:-8082}:8082']
+
+  report:
+    <<: *java
+    image: ckd/report:local
+    build: {context: ., dockerfile: services/report-service/Dockerfile}
+    environment: *java-environment
+    ports: ['127.0.0.1:${REPORT_PORT:-8083}:8083']
+
+  prediction:
+    <<: *java
+    image: ckd/prediction:local
+    build: {context: ., dockerfile: services/prediction-service/Dockerfile}
+    environment:
+      <<: *java-environment
+      APPOINTMENT_CLIENT_URL: http://appointment:8082/appointments
+      REPORT_CLIENT_URL: http://report:8083/reports
+      CKD_TABULAR_PREDICTION_URL: http://ml-service:8001/routes/tab_predict
+      CKD_IMAGE_PREDICTION_URL: http://ml-service:8001/routes/unet_predict
+      PREDICTION_IMAGE_HOSTS: ${PREDICTION_IMAGE_HOSTS:-res.cloudinary.com}
+      PREDICTION_TABULAR_WEIGHT: ${PREDICTION_TABULAR_WEIGHT:-0.5}
+      PREDICTION_IMAGE_WEIGHT: ${PREDICTION_IMAGE_WEIGHT:-0.5}
+      PREDICTION_THRESHOLD: ${PREDICTION_THRESHOLD:-0.5}
+    depends_on:
+      appointment: {condition: service_healthy}
+      report: {condition: service_healthy}
+      ml-service: {condition: service_healthy}
+    ports: ['127.0.0.1:${PREDICTION_PORT:-8084}:8084']
+
+  ml-service:
+    image: ckd/ml-service:local
+    platform: ${ML_PLATFORM:-linux/amd64}
+    build: {context: ., dockerfile: services/ml-service/Dockerfile}
+    restart: unless-stopped
+    init: true
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      ML_MODELS_DIR: /models
+      PREDICTION_IMAGE_HOSTS: ${PREDICTION_IMAGE_HOSTS:-res.cloudinary.com}
+      PADDLE_PDX_CACHE_HOME: /home/ckd/.cache/paddlex
+    volumes:
+      - type: bind
+        source: ${ML_MODELS_PATH:-./models}
+        target: /models
+        read_only: true
+        bind: {create_host_path: false}
+      - ml-cache:/home/ckd/.cache
+    depends_on:
+      redis: {condition: service_healthy}
+    ports: ['127.0.0.1:${ML_PORT:-8001}:8001']
+
+  frontend:
+    image: ckd/frontend:local
+    build: {context: ., dockerfile: frontend/Dockerfile}
+    restart: unless-stopped
+    depends_on:
+      auth: {condition: service_healthy}
+      appointment: {condition: service_healthy}
+      report: {condition: service_healthy}
+      prediction: {condition: service_healthy}
+    ports: ['127.0.0.1:${FRONTEND_PORT:-3000}:8080']
+
+  prometheus:
+    image: prom/prometheus:v3.16.0
+    profiles: [observability]
+    restart: unless-stopped
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.retention.time=7d]
+    ports: ['127.0.0.1:${PROMETHEUS_PORT:-9090}:9090']
+    volumes:
+      - ./infrastructure/observability/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      auth: {condition: service_healthy}
+      appointment: {condition: service_healthy}
+      report: {condition: service_healthy}
+      prediction: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:9090/-/ready || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  grafana:
+    image: grafana/grafana:13.3.0
+    profiles: [observability]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_LOG_MODE: console
+      GF_LOG_CONSOLE_FORMAT: json
+    ports: ['127.0.0.1:${GRAFANA_PORT:-3001}:3000']
+    volumes:
+      - ./infrastructure/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      prometheus: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:3000/api/health || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mongo-data:
+  redis-data:
+  ml-cache:
+  prometheus-data:
+  grafana-data:

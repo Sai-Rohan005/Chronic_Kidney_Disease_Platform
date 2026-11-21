@@ -4,7 +4,7 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 COPY frontend/ ./
-RUN npm run build
+RUN npm run build && node scripts/pdf-smoke.mjs
 
 FROM nginx:1.28-alpine AS runtime
 RUN mkdir -p /tmp/nginx && chown -R nginx:nginx /tmp/nginx /usr/share/nginx/html

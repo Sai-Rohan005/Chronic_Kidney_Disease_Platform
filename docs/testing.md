@@ -90,7 +90,7 @@ unit/HTTP coverage measurement.
 | Module | Measured line coverage | Line gate | Measured branch coverage | Branch gate |
 | --- | ---: | ---: | ---: | ---: |
 | shared-auth | 72.19% | 72% | 56.25% | 56% |
-| Auth | 46.15% | 46% | 49.22% | 49% |
+| Auth | 65.99% | 65% | 67.19% | 67% |
 | Appointment | 27.01% | 27% | 17.65% | 17% |
 | Prediction | 94.23% | 94% | 70.52% | 70% |
 | Report | 50.34% | 50% | 40.00% | 40% |
