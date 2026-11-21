@@ -20,7 +20,7 @@ import logging
 
 # router = APIRouter()
 
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# BASE_DIR = os.environ.get("ML_MODELS_DIR", os.path.dirname(os.path.abspath(__file__)))
 # ENCODERS_PATH = os.path.join(BASE_DIR, "tab_binary_8", "ordinal_encoder_fold1_5.pkl")
 # MODEL_PATH = os.path.join(BASE_DIR, "tab_binary_8", "tabtransformer_fold1_5_best.pth")
 # SCALER_PATH = os.path.join(BASE_DIR,"tab_binary_8","scaler_fold1_5.pkl")
@@ -186,7 +186,7 @@ import os
 
 router = APIRouter()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.environ.get("ML_MODELS_DIR", os.path.dirname(os.path.abspath(__file__)))
 ENCODERS_PATH = os.path.join(BASE_DIR, "tab_binary_8", "ordinal_encoder_fold1_5.pkl")
 SCALER_PATH = os.path.join(BASE_DIR, "tab_binary_8", "scaler_fold1_5.pkl")
 MODEL_PATH = os.path.join(BASE_DIR, "tab_binary_8", "tabtransformer_fold1_5_best.pth")

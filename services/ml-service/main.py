@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from .observability import configure_logging, RequestCorrelationMiddleware
 configure_logging()
+from .model_assets import validate_assets
+validate_assets()
 from .security import JwtValidator, install_security
 from .routes import text_extractor_router, tab_trans_router
 from .routes.image_classification import router as image_classification_router

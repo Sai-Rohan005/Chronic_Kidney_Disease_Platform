@@ -226,7 +226,7 @@ class TransUNet(nn.Module):
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 transunet = TransUNet().to(device)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.environ.get("ML_MODELS_DIR", os.path.dirname(os.path.abspath(__file__)))
 model_path = os.path.join(BASE_DIR, "transunet_kidney.pth")
 state_dict = torch.load(model_path, map_location=device)
 transunet.load_state_dict(state_dict, strict=False)  # ignore missing encoder keys
@@ -297,7 +297,7 @@ async def predict_unet(request: Request):
             return {"error": "No image URL provided"}
 
         # Enforce the allow-list at the actual fetch; never follow redirects or open local paths.
-        from safe_images import download_image
+        from ..safe_images import download_image
         image_pil = Image.open(BytesIO(download_image(img_url))).convert("RGB")
 
         # Run UNet to get mask

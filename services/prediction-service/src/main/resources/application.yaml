@@ -54,7 +54,7 @@ report:
 management:
   server:
     port: ${MANAGEMENT_SERVER_PORT:9084}
-    address: 127.0.0.1
+    address: ${MANAGEMENT_SERVER_ADDRESS:127.0.0.1}
   endpoints:
     web:
       exposure:
