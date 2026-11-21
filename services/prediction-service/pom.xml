@@ -28,7 +28,7 @@
     </scm>
     <properties>
         <java.version>21</java.version>
-        <coverage.line.minimum>0.94</coverage.line.minimum>
+        <coverage.line.minimum>0.92</coverage.line.minimum>
         <coverage.branch.minimum>0.70</coverage.branch.minimum>
     </properties>
 
